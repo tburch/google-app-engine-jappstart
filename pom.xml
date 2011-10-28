@@ -90,6 +90,11 @@
             <name>jboss repository</name>
             <url>https://repository.jboss.org/nexus/content/groups/public</url>
         </repository>
+        <repository>
+			<id>objectify-appengine</id>
+			<name>Objectify Maven Repository</name>
+			<url>http://objectify-appengine.googlecode.com/svn/maven</url>
+		</repository>
     </repositories>
 
     <pluginRepositories>
@@ -206,31 +211,15 @@
 
         <!-- Compile Scope -->
         <dependency>
-            <groupId>com.google.appengine.orm</groupId>
-            <artifactId>datanucleus-appengine</artifactId>
-            <version>1.0.9</version>
-        </dependency>
+			<groupId>javax.persistence</groupId>
+			<artifactId>persistence-api</artifactId>
+			<version>1.0</version>
+		</dependency>
         <dependency>
-            <groupId>org.apache.geronimo.specs</groupId>
-            <artifactId>geronimo-jpa_3.0_spec</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.geronimo.specs</groupId>
-            <artifactId>geronimo-jta_1.1_spec</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.jdo</groupId>
-            <artifactId>jdo2-api</artifactId>
-            <version>2.3-eb</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.transaction</groupId>
-                    <artifactId>transaction-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+			<groupId>com.googlecode.objectify</groupId>
+			<artifactId>objectify</artifactId>
+			<version>3.0</version>
+		</dependency>
         <dependency>
             <groupId>com.google.appengine</groupId>
             <artifactId>appengine-api-labs</artifactId>
@@ -244,11 +233,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>${springframework.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-orm</artifactId>
             <version>${springframework.version}</version>
         </dependency>
         <dependency>

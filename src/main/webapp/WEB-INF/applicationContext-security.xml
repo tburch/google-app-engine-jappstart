@@ -47,7 +47,6 @@
     </beans:bean>
 
     <beans:bean id="userDetailsService" class="com.jappstart.service.auth.UserDetailsServiceImpl">
-        <beans:property name="datastoreService" ref="datastoreService" />
         <beans:property name="mailTaskName" value="mail" />
         <beans:property name="mailTaskUrl" value="/task/mail/activate" />
         <beans:property name="memcacheService" ref="memcacheServiceUser" />

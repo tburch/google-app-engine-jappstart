@@ -21,29 +21,24 @@ package com.jappstart.model.auth;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 
 import org.springframework.stereotype.Repository;
 
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
+import com.googlecode.objectify.annotation.Unindexed;
 
 /**
  * The persistent login entity class.
  */
-@SuppressWarnings("serial")
 @Repository
-@Entity
 public class PersistentLogin implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-    /**
+	/**
      * The key.
      */
     @Id
-    private Key key;
+    private long id;
 
     /**
      * The username.
@@ -58,28 +53,32 @@ public class PersistentLogin implements Serializable {
     /**
      * The token.
      */
+    @Unindexed
     private String token;
 
     /**
      * The last used date.
      */
+    @Unindexed
     private Date lastUsed;
 
     /**
      * The persistent user.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Unindexed
     private PersistentUser persistentUser;
+    
+    @SuppressWarnings("unused")
+	private PersistentLogin() {}
 
     /**
      * Create persistent login with a unique username.
      *
-     * @param key the parent key
+     * @param id the parent key
      * @param username the username
      */
-    public PersistentLogin(final Key key, final String username) {
-        this.key = KeyFactory.createKey(key, getClass().getSimpleName(),
-            username);
+    public PersistentLogin(final long id, final String username) {
+        this.id = id;
         this.username = username;
     }
 
@@ -88,8 +87,8 @@ public class PersistentLogin implements Serializable {
      *
      * @return the key
      */
-    public final Key getKey() {
-        return key;
+    public final long getId() {
+        return id;
     }
 
     /**
@@ -97,8 +96,8 @@ public class PersistentLogin implements Serializable {
      *
      * @param key the key
      */
-    public final void setKey(final Key key) {
-        this.key = key;
+    public final void setId(final long id) {
+        this.id = id;
     }
 
     /**

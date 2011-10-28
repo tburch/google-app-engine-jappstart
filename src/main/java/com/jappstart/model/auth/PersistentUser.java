@@ -30,9 +30,6 @@ import javax.persistence.OneToOne;
 
 import org.springframework.stereotype.Repository;
 
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
-
 /**
  * The persistent user entity class.
  */
@@ -45,7 +42,7 @@ public class PersistentUser implements Serializable {
      * The key.
      */
     @Id
-    private Key key;
+    private Long id;
 
     /**
      * The username.
@@ -70,9 +67,8 @@ public class PersistentUser implements Serializable {
      * @param key the parent key
      * @param username the username
      */
-    public PersistentUser(final Key key, final String username) {
-        this.key = KeyFactory.createKey(key, getClass().getSimpleName(),
-            username);
+    public PersistentUser(final Long id, final String username) {
+        this.id = id;
         this.username = username;
     }
 
@@ -81,8 +77,8 @@ public class PersistentUser implements Serializable {
      *
      * @return the key
      */
-    public final Key getKey() {
-        return key;
+    public final Long getId() {
+        return id;
     }
 
     /**
@@ -90,8 +86,8 @@ public class PersistentUser implements Serializable {
      *
      * @param key the key
      */
-    public final void setKey(final Key key) {
-        this.key = key;
+    public final void setKey(final Long id) {
+        this.id = id;
     }
 
     /**

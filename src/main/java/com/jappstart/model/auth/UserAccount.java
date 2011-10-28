@@ -24,31 +24,27 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
 
 import org.springframework.security.core.codec.Hex;
 import org.springframework.stereotype.Repository;
 
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Unindexed;
 
 /**
  * The user account entity class.
  */
-@SuppressWarnings("serial")
 @Repository
 @Entity
 public class UserAccount implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-    /**
+	/**
      * The key.
      */
     @Id
-    private Key key;
+    private Long id;
 
     /**
      * The username.
@@ -63,21 +59,25 @@ public class UserAccount implements Serializable {
     /**
      * The display name.
      */
+    @Unindexed
     private String displayName;
 
     /**
      * The password.
      */
+    @Unindexed
     private String password;
 
     /**
      * The salt.
      */
+    @Unindexed
     private String salt;
 
     /**
      * The role.
      */
+    @Unindexed
     private String role;
 
     /**
@@ -88,33 +88,41 @@ public class UserAccount implements Serializable {
     /**
      * The activation e-mail status.
      */
+    @Unindexed
     private boolean activationEmailSent;
 
     /**
      * The enabled status.
      */
+    @Unindexed
     private boolean enabled;
 
     /**
      * The account non-expired status.
      */
+    @Unindexed
     private boolean accountNonExpired;
 
     /**
      * The account non-locked status.
      */
+    @Unindexed
     private boolean accountNonLocked;
 
     /**
      * The credentials non-expired status.
      */
+    @Unindexed
     private boolean credentialsNonExpired;
 
     /**
      * The persistent user.
      */
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Unindexed
     private PersistentUser persistentUser;
+    
+    @SuppressWarnings("unused")
+	private UserAccount() {}
 
     /**
      * Create a user account with a unique username.
@@ -125,7 +133,6 @@ public class UserAccount implements Serializable {
         MessageDigest sDigest = null;
         MessageDigest aDigest = null;
 
-        this.key = KeyFactory.createKey(getClass().getSimpleName(), username);
         this.username = username;
         this.enabled = false;
         this.accountNonExpired = true;
@@ -154,8 +161,8 @@ public class UserAccount implements Serializable {
      *
      * @return the key
      */
-    public final Key getKey() {
-        return key;
+    public final Long getId() {
+        return id;
     }
 
     /**
@@ -163,8 +170,8 @@ public class UserAccount implements Serializable {
      *
      * @param key the key
      */
-    public final void setKey(final Key key) {
-        this.key = key;
+    public final void setKey(final Long id) {
+        this.id = id;
     }
 
     /**
