@@ -80,7 +80,7 @@
         <maven.gae.plugin.version>0.9.2</maven.gae.plugin.version>
         <datanucleus.version>1.1.5</datanucleus.version>
         <springframework.version>3.0.6.RELEASE</springframework.version>
-        <springframework.security.version>3.0.7.RELEASE</springframework.security.version>
+        <springframework.security.version>3.1.0.RC2</springframework.security.version>
         <slf4j.version>1.6.1</slf4j.version>
     </properties>
 

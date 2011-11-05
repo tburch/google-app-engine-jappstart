@@ -26,7 +26,7 @@ import java.util.UUID;
 
 import javax.persistence.Id;
 
-import org.springframework.security.core.codec.Hex;
+import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Repository;
 
 import com.googlecode.objectify.annotation.Cached;
