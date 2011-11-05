@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.GrantedAuthorityImpl;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -92,7 +92,7 @@ public class EnhancedUserDetailsServiceImpl extends DAOBase implements EnhancedU
 		} catch (NotFoundException e) {
 			throw new UsernameNotFoundException("Username not found.");
 		}
-		authorities.add(new GrantedAuthorityImpl(user.getRole()));
+		authorities.add(new SimpleGrantedAuthority(user.getRole()));
 		return new EnhancedUser(user.getUsername(), user.getEmail(), user.getDisplayName(), user.getPassword(), user.getSalt(),
 				user.isEnabled(), user.isAccountNonExpired(), user.isCredentialsNonExpired(), user.isAccountNonLocked(), authorities);
 	}
