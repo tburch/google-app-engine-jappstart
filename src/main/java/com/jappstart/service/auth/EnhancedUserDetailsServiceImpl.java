@@ -28,11 +28,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.google.appengine.api.memcache.Expiration;
-import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
+import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.Query;
@@ -44,16 +43,11 @@ import com.jappstart.model.auth.UserAccount;
  * The user details service implementation.
  */
 @Service
-public class UserDetailsServiceImpl extends DAOBase implements EnhancedUserDetailsService {
+public class EnhancedUserDetailsServiceImpl extends DAOBase implements EnhancedUserDetailsService {
 
 	static {
 		ObjectifyService.register(UserAccount.class);
 	}
-
-	/**
-	 * The default cache expiration in seconds.
-	 */
-	private static final int DEFAULT_EXPIRATION = 3600;
 
 	/**
 	 * The mail task name.
@@ -64,11 +58,6 @@ public class UserDetailsServiceImpl extends DAOBase implements EnhancedUserDetai
 	 * The mail task URL.
 	 */
 	private String mailTaskUrl;
-
-	/**
-	 * The memcache service.
-	 */
-	private MemcacheService memcacheService;
 
 	/**
 	 * Sets the mail task name.
@@ -89,15 +78,6 @@ public class UserDetailsServiceImpl extends DAOBase implements EnhancedUserDetai
 	}
 
 	/**
-	 * Sets the memcache service.
-	 * 
-	 * @param memcacheService the memcache service
-	 */
-	public final void setMemcacheService(final MemcacheService memcacheService) {
-		this.memcacheService = memcacheService;
-	}
-
-	/**
 	 * Locates the user based on the username.
 	 * 
 	 * @param username string the username
@@ -106,15 +86,11 @@ public class UserDetailsServiceImpl extends DAOBase implements EnhancedUserDetai
 	@Override
 	public final UserDetails loadUserByUsername(final String username) {
 		final List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-		UserAccount user = (UserAccount) memcacheService.get(username);
-		if (user == null) {
-			final Query<UserAccount> query = ofy().query(UserAccount.class).filter("username", username);
-			user = query.get();
-			if (user != null) {
-				memcacheService.put(username, user, Expiration.byDeltaSeconds(DEFAULT_EXPIRATION));
-			} else {
-				throw new UsernameNotFoundException("Username not found.");
-			}
+		UserAccount user = null;
+		try {
+			user = ofy().get(UserAccount.class, username);
+		} catch (NotFoundException e) {
+			throw new UsernameNotFoundException("Username not found.");
 		}
 		authorities.add(new GrantedAuthorityImpl(user.getRole()));
 		return new EnhancedUser(user.getUsername(), user.getEmail(), user.getDisplayName(), user.getPassword(), user.getSalt(),
@@ -129,13 +105,11 @@ public class UserDetailsServiceImpl extends DAOBase implements EnhancedUserDetai
 	 */
 	@Override
 	public final UserAccount getUser(final String username) {
-		UserAccount user = (UserAccount) memcacheService.get(username);
-		if (user == null) {
-			final Query<UserAccount> query = ofy().query(UserAccount.class).filter("username", username);
-			user = query.get();
-			if (user != null) {
-				memcacheService.put(username, user, Expiration.byDeltaSeconds(DEFAULT_EXPIRATION));
-			}
+		UserAccount user = null;
+		try {
+			user = ofy().get(UserAccount.class, username);
+		} catch (NotFoundException e) {
+			//no user found
 		}
 		return user;
 	}
@@ -147,24 +121,18 @@ public class UserDetailsServiceImpl extends DAOBase implements EnhancedUserDetai
 	 * @param locale the locale
 	 */
 	@Override
-	public final void addUser(final UserAccount user, final Locale locale) {
-		final UserAccount cachedUser = (UserAccount) memcacheService.get(user.getUsername());
-		if (cachedUser != null) {
+	public final void addUser(final UserAccount user, final boolean sendActivationEmail, final Locale locale) {
+		try {
+			ofy().get(UserAccount.class, user.getUsername());
 			throw new DuplicateUserException();
-		}
-		final Query<UserAccount> query = ofy().query(UserAccount.class).filter("username", user.getUsername());
-		if (query.get() != null) {
-			throw new DuplicateUserException();
-		}
-		final boolean added = persistWithTransaction(user);
-
-		if (added) {
-			memcacheService.put(user.getUsername(), user, Expiration.byDeltaSeconds(DEFAULT_EXPIRATION));
-
-			final TaskOptions taskOptions = TaskOptions.Builder.withUrl(mailTaskUrl).param("username", user.getUsername())
-					.param("locale", locale.toString());
-			final Queue queue = QueueFactory.getQueue(mailTaskName);
-			queue.add(taskOptions);
+		} catch (NotFoundException e) {
+			final boolean added = persistWithTransaction(user);
+			if (added && sendActivationEmail) {
+				final TaskOptions taskOptions = TaskOptions.Builder.withUrl(mailTaskUrl).param("username", user.getUsername())
+						.param("locale", locale.toString());
+				final Queue queue = QueueFactory.getQueue(mailTaskName);
+				queue.add(taskOptions);
+			}
 		}
 	}
 
@@ -178,7 +146,7 @@ public class UserDetailsServiceImpl extends DAOBase implements EnhancedUserDetai
 	public final boolean activateUser(final String key) {
 		final Query<UserAccount> query = ofy().query(UserAccount.class).filter("activationKey", key);
 		final UserAccount user = query.get();
-		boolean activated = true;
+		boolean activated = false;
 		if (user != null) {
 			user.setEnabled(true);
 			activated = persistWithTransaction(user);
@@ -194,17 +162,12 @@ public class UserDetailsServiceImpl extends DAOBase implements EnhancedUserDetai
 	 */
 	@Override
 	public final boolean isActivationEmailSent(final String username) {
-		UserAccount user = (UserAccount) memcacheService.get(username);
-		if (user == null) {
-			final Query<UserAccount> query = ofy().query(UserAccount.class).filter("username", username);
-			user = query.get();
-			if (user != null) {
-				memcacheService.put(username, user, Expiration.byDeltaSeconds(DEFAULT_EXPIRATION));
-			} else {
-				throw new UsernameNotFoundException("Username not found.");
-			}
+		try {
+			UserAccount user = ofy().get(UserAccount.class, username);
+			return user.isActivationEmailSent();
+		} catch (NotFoundException e) {
+			throw new UsernameNotFoundException("Username not found.");
 		}
-		return user.isActivationEmailSent();
 	}
 
 	/**
@@ -213,18 +176,15 @@ public class UserDetailsServiceImpl extends DAOBase implements EnhancedUserDetai
 	 * @param username the username
 	 */
 	@Override
-	public final void activationEmailSent(final String username) {
-		final Query<UserAccount> query = ofy().query(UserAccount.class).filter("username", username);
-		final UserAccount user = query.get();
+	public final UserAccount activationEmailSent(final String username) {
+		final UserAccount user = ofy().get(UserAccount.class, username);
 		if (user != null) {
 			user.setActivationEmailSent(true);
-			final boolean udated = persistWithTransaction(user);
-			if (udated) {
-				memcacheService.put(user.getUsername(), user, Expiration.byDeltaSeconds(DEFAULT_EXPIRATION)); 
-			}
+			persistWithTransaction(user);
 		} else {
 			throw new UsernameNotFoundException("Username not found.");
 		}
+		return user;
 	}
 	
 	/**

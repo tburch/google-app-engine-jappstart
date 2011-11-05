@@ -20,6 +20,7 @@ package com.jappstart.controller;
 
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -84,9 +85,11 @@ public class LoginController {
     @RequestMapping(value = "/login/validate", method = RequestMethod.POST)
     public final String validate(final ModelMap modelMap,
         @RequestBody final Map<String, String> request) {
-        final UserAccount user =
-            userDetailsService.getUser(request.get("username"));
-
+    	String userName = request.get("username");
+    	UserAccount user = null;
+    	if (StringUtils.isNotBlank(userName)) {
+    		user = userDetailsService.getUser(userName);
+    	}
         modelMap.put("found", user != null);
         return null;
     }

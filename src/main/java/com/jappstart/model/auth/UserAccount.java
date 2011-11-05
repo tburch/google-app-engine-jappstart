@@ -29,6 +29,7 @@ import javax.persistence.Id;
 import org.springframework.security.core.codec.Hex;
 import org.springframework.stereotype.Repository;
 
+import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Unindexed;
 
@@ -37,92 +38,50 @@ import com.googlecode.objectify.annotation.Unindexed;
  */
 @Repository
 @Entity
+@Cached
 public class UserAccount implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	/**
-     * The key.
-     */
-    @Id
-    private Long id;
+    private String uuid;
 
-    /**
-     * The username.
-     */
+    @Id
     private String username;
 
-    /**
-     * The e-mail address.
-     */
     private String email;
 
-    /**
-     * The display name.
-     */
     @Unindexed
     private String displayName;
 
-    /**
-     * The password.
-     */
     @Unindexed
     private String password;
 
-    /**
-     * The salt.
-     */
     @Unindexed
     private String salt;
 
-    /**
-     * The role.
-     */
     @Unindexed
     private String role;
 
-    /**
-     * The activation key.
-     */
     private String activationKey;
 
-    /**
-     * The activation e-mail status.
-     */
     @Unindexed
     private boolean activationEmailSent;
 
-    /**
-     * The enabled status.
-     */
     @Unindexed
     private boolean enabled;
 
-    /**
-     * The account non-expired status.
-     */
     @Unindexed
     private boolean accountNonExpired;
 
-    /**
-     * The account non-locked status.
-     */
     @Unindexed
     private boolean accountNonLocked;
 
-    /**
-     * The credentials non-expired status.
-     */
     @Unindexed
     private boolean credentialsNonExpired;
 
-    /**
-     * The persistent user.
-     */
-    @Unindexed
-    private PersistentUser persistentUser;
-    
     @SuppressWarnings("unused")
-	private UserAccount() {}
+	private UserAccount() {
+    	
+    }
 
     /**
      * Create a user account with a unique username.
@@ -139,6 +98,7 @@ public class UserAccount implements Serializable {
         this.accountNonLocked = true;
         this.credentialsNonExpired = true;
         this.role = "ROLE_USER";
+        this.uuid = UUID.randomUUID().toString();
 
         try {
             sDigest = MessageDigest.getInstance("SHA-256");
@@ -161,18 +121,9 @@ public class UserAccount implements Serializable {
      *
      * @return the key
      */
-    public final Long getId() {
-        return id;
-    }
-
-    /**
-     * Sets the key.
-     *
-     * @param key the key
-     */
-    public final void setKey(final Long id) {
-        this.id = id;
-    }
+	public final UUID getuUuid() {
+		return UUID.fromString(uuid);
+	}
 
     /**
      * Returns the username.
@@ -181,15 +132,6 @@ public class UserAccount implements Serializable {
      */
     public final String getUsername() {
         return username;
-    }
-
-    /**
-     * Sets the username.
-     *
-     * @param username the username
-     */
-    public final void setUsername(final String username) {
-        this.username = username;
     }
 
     /**
@@ -390,24 +332,6 @@ public class UserAccount implements Serializable {
     public final void setCredentialsNonExpired(
         final boolean credentialsNonExpired) {
         this.credentialsNonExpired = credentialsNonExpired;
-    }
-
-    /**
-     * Gets the persistent user.
-     *
-     * @return the persistent user
-     */
-    public final PersistentUser getPersistentUser() {
-        return persistentUser;
-    }
-
-    /**
-     * Sets the persistent user.
-     *
-     * @param persistentUser the persistent user
-     */
-    public final void setPersistentUser(final PersistentUser persistentUser) {
-        this.persistentUser = persistentUser;
     }
 
 }

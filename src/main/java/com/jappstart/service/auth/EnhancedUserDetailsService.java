@@ -35,7 +35,7 @@ public interface EnhancedUserDetailsService extends UserDetailsService {
      * @param user the user
      * @param locale the locale
      */
-    void addUser(final UserAccount user, final Locale locale);
+    void addUser(final UserAccount user, final boolean sendActivationEmail, final Locale locale);
 
     /**
      * Returns the user account for the given username.
@@ -65,7 +65,8 @@ public interface EnhancedUserDetailsService extends UserDetailsService {
      * Updates the activation e-mail sent status.
      *
      * @param username the username
+     * @return TODO
      */
-    void activationEmailSent(final String username);
+    UserAccount activationEmailSent(final String username);
 
 }

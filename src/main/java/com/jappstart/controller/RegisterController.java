@@ -235,7 +235,7 @@ public class RegisterController {
             register.getPassword(), user.getSalt()));
 
         try {
-            userDetailsService.addUser(user, locale);
+            userDetailsService.addUser(user, true, locale);
         } catch (DuplicateUserException e) {
             binding.addError(new FieldError(REGISTER, "username",
                 messageSource.getMessage("create.error.username", null,

@@ -38,18 +38,27 @@
         <intercept-url pattern="/**" access="hasRole('ROLE_USER')" requires-channel="http" />
         <form-login login-page="/login" login-processing-url="/login/submit" authentication-failure-url="/login/error" />
         <logout logout-url="/logout" />
-        <remember-me services-ref="rememberMeServices" key="${google.app.id}" />
+        <remember-me key="${google.app.id}" services-ref="rememberMeServices" />
     </http>
 
     <beans:bean id="userPassAuthFilterBeanPostProcessor" class="com.jappstart.service.auth.UserPassAuthFilterBeanPostProcessor">
         <beans:property name="usernameParameter" value="username" />
         <beans:property name="passwordParameter" value="password" />
     </beans:bean>
+    
+    <beans:bean id="persistentTokenRepository" class="com.jappstart.service.auth.PersistentTokenRepositoryImpl" />
 
-    <beans:bean id="userDetailsService" class="com.jappstart.service.auth.UserDetailsServiceImpl">
+    <beans:bean id="userDetailsService" class="com.jappstart.service.auth.EnhancedUserDetailsServiceImpl">
         <beans:property name="mailTaskName" value="mail" />
         <beans:property name="mailTaskUrl" value="/task/mail/activate" />
-        <beans:property name="memcacheService" ref="memcacheServiceUser" />
+    </beans:bean>
+    
+    <beans:bean id="rememberMeServices" class="org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices">
+        <beans:property name="userDetailsService" ref="userDetailsService" />
+        <beans:property name="tokenRepository" ref="persistentTokenRepository" />
+        <beans:property name="cookieName" value="REMEMBER_ME" />
+        <beans:property name="parameter" value="remember_me" />
+        <beans:property name="key" value="${google.app.id}" />
     </beans:bean>
 
     <authentication-manager alias="authenticationManager">
@@ -86,18 +95,6 @@
                 </beans:bean>
             </beans:list>
         </beans:property>
-    </beans:bean>
-
-    <beans:bean id="persistentTokenRepository" class="com.jappstart.service.auth.PersistentTokenRepositoryImpl">
-        <beans:property name="memcacheService" ref="memcacheServiceUser" />
-    </beans:bean>
-
-    <beans:bean id="rememberMeServices" class="org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices">
-        <beans:property name="userDetailsService" ref="userDetailsService" />
-        <beans:property name="tokenRepository" ref="persistentTokenRepository" />
-        <beans:property name="cookieName" value="REMEMBER_ME" />
-        <beans:property name="parameter" value="remember_me" />
-        <beans:property name="key" value="${google.app.id}" />
     </beans:bean>
 
 </beans:beans>
