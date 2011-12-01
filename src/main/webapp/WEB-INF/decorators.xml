@@ -18,6 +18,9 @@
     along with jappstart.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <decorators defaultdir="/WEB-INF/view/decorators">
+    <decorator name="developmentConsole" page="developmentConsole.jsp">
+        <pattern>/_ah/*</pattern>
+    </decorator>
     <decorator name="master" page="master.jsp">
         <pattern>/*</pattern>
     </decorator>
